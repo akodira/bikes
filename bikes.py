@@ -105,17 +105,9 @@ Total_Rented_Bikes = data['rented_bikes_count'].sum()
 
 
 
-col1, col2 = st.columns(2)
-
-
-with col1:
-    st.image('C:/Users/Ahmed Kodira/Plotly/bike.jpg')
-    st.logo('C:/Users/Ahmed Kodira/Plotly/redfiltericon.jpg')
-
-with col2:
-    st.markdown("<h1 style='text-align: center; color: red;'>Bikes Analysis Dashboard</h1>", unsafe_allow_html=True)
-    st.markdown("---")
-
+st.set_page_config(page_title="Bikes Analysis dashboard",layout='wide')
+st.markdown("<h1 style='text-align: center; color: red;'>Bikes Analysis Dashboard</h1>", unsafe_allow_html=True)
+st.markdown("---")
 st.sidebar.title('Filter Pane')
 
 
