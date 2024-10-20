@@ -110,34 +110,65 @@ st.markdown("<h1 style='text-align: center; color: red;'>Bikes Analysis Dashboar
 st.markdown("---")
 st.sidebar.title('Filter Pane')
 
+# User selections in the sidebar
+selected_year = st.sidebar.selectbox('Select Year', options=['Select'] + list(data['year'].unique()))
+selected_month = st.sidebar.multiselect('Select Month', options=list(data['month_name'].unique()))
+selected_quarter = st.sidebar.selectbox('Select Quarter', options=['Select'] + list(data['quarter'].unique()))
+selected_day = st.sidebar.multiselect('Select Day', options=list(data['day_name'].unique()))
+selected_season = st.sidebar.radio('Select Season', options=['Select'] + list(data['season'].unique()))
+selected_weather = st.sidebar.selectbox('Select Weather', options=['Select'] + list(data['weather'].unique()))
 
+# Start with a copy of the original data
+filtered_data = data.copy()
 
+# Apply filters based on user selections
+if selected_year != 'Select':  # 'Select' acts as a placeholder for no selection
+    filtered_data = filtered_data[filtered_data['year'] == selected_year]
+
+if selected_month:  # Will only filter if a month is selected
+    filtered_data = filtered_data[filtered_data['month_name'].isin(selected_month)]
+
+if selected_quarter != 'Select':
+    filtered_data = filtered_data[filtered_data['quarter'] == selected_quarter]
+
+if selected_day:  # Will only filter if a day is selected
+    filtered_data = filtered_data[filtered_data['day_name'].isin(selected_day)]
+
+if selected_season != 'Select':
+    filtered_data = filtered_data[filtered_data['season'] == selected_season]
+
+if selected_weather != 'Select':
+    filtered_data = filtered_data[filtered_data['weather'] == selected_weather]
+
+# Now 'filtered_data' contains only the data that m
+
+# Create four columns
 col1, col2, col3, col4 = st.columns(4)
 
 
 with col1:
-    Total_Profit = round(data['Profit'].sum(), 2)  
+    Total_Profit = round(filtered_data['Profit'].sum(), 2)  
     profit_value = f"${Total_Profit:,.2f}"  
-    st.markdown(f"<h3 style='color: black; font-size: 14px; text-align: center;'>Total Profit</h3>", unsafe_allow_html=True)
-    st.markdown(f"<p style='color: red; font-size: 14px; text-align: center; font-weight: bold;'>{profit_value}</p>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: black; font-size: 18px; text-align: center;'>Total Profit</h3>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color: red; font-size: 24px; text-align: center; font-weight: bold;'>{profit_value}</p>", unsafe_allow_html=True)
 
 with col2:
-    Total_Registered_Bikes = round(data['registered'].sum(), 0) 
+    Total_Registered_Bikes = round(filtered_data['registered'].sum(), 0) 
     registered_value = f"{Total_Registered_Bikes:,.0f}"  
-    st.markdown(f"<h3 style='color: black; font-size: 14px; text-align: center;'>Total Registered Bikes</h3>", unsafe_allow_html=True)
-    st.markdown(f"<p style='color: red; font-size: 14px; text-align: center; font-weight: bold;'>{registered_value}</p>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: black; font-size: 18px; text-align: center;'>Total Registered Bikes</h3>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color: red; font-size: 24px; text-align: center; font-weight: bold;'>{registered_value}</p>", unsafe_allow_html=True)
 
 with col3:
-    Total_Causal_Bikes = round(data['casual'].sum(), 0)  
+    Total_Causal_Bikes = round(filtered_data['casual'].sum(), 0)  
     causal_value = f"{Total_Causal_Bikes:,.0f}"  # Format with thousands separator
-    st.markdown(f"<h3 style='color: black; font-size: 14px; text-align: center;'>Total Causal Bikes</h3>", unsafe_allow_html=True)
-    st.markdown(f"<p style='color: red; font-size: 14px; text-align: center; font-weight: bold;'>{causal_value}</p>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: black; font-size: 18px; text-align: center;'>Total Causal Bikes</h3>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color: red; font-size: 24px; text-align: center; font-weight: bold;'>{causal_value}</p>", unsafe_allow_html=True)
 
 with col4:
-    Total_Rented_Bikes = round(data['rented_bikes_count'].sum(), 0)  # Round total rented bikes to 0 decimal places
+    Total_Rented_Bikes = round(filtered_data['rented_bikes_count'].sum(), 0)  # Round total rented bikes to 0 decimal places
     rented_value = f"{Total_Rented_Bikes:,.0f}"  # Format with thousands separator
-    st.markdown(f"<h3 style='color: black; font-size: 14px; text-align: center;'>Total Rented Bikes</h3>", unsafe_allow_html=True)
-    st.markdown(f"<p style='color: red; font-size: 14px; text-align: center; font-weight: bold;'>{rented_value}</p>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: black; font-size: 18px; text-align: center;'>Total Rented Bikes</h3>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color: red; font-size: 24px; text-align: center; font-weight: bold;'>{rented_value}</p>", unsafe_allow_html=True)
 
 
 
@@ -222,7 +253,7 @@ def page1():
         day_colors = ['green' if value == max_day_profit else 'red' if value == min_day_profit else 'lightgray' for value in profit_by_day_name['Profit']]
         
         st.plotly_chart(px.bar(data_frame=profit_by_day_name, x='day_name', y='Profit', text_auto=True)
-                         .update_traces(marker_color=day_colors)  # Set bar colors
+                         .update_traces(marker_color=day_colors)  
                          .update_layout(title_text='Total Profit by Day', showlegend=False)  # Hide legend
                          .update_layout(yaxis={'showticklabels': False}))
 
@@ -265,6 +296,7 @@ def page2():
                      yaxis_title='Rented Bikes'
                  ))
 
+    
     with tab2:
         temp_analysis = filtered_data.groupby('temp')['rented_bikes_count'].sum().reset_index()
         def get_point_colors(values):
@@ -297,17 +329,17 @@ def page2():
         st.plotly_chart(px.line(rented_bikes_by_hour, x='hour', y='rented_bikes_count')
                  .update_traces(
                      line_color='red',
-                     mode='lines+markers+text',  # Include text on the line with markers
+                     mode='lines+markers+text',  
                      marker=dict(color='green', size=8),
-                     text=rented_bikes_by_hour['rented_bikes_count'],  # Display numbers on the line
-                     textposition='top center'  # Position the text at the top of markers
+                     text=rented_bikes_by_hour['rented_bikes_count'],  
+                     textposition='top center'  
                  )
                  .update_layout(
                      title_text='Total Rented Bikes by Hour of Day',
                      xaxis_title='Hour',
                      yaxis_title='Total Rentals',
-                     xaxis=dict(tickmode='linear', tick0=0, dtick=1),  # Show all hours on x-axis
-                     yaxis={'showticklabels': False}  # Hide y-axis tick labels if needed
+                     xaxis=dict(tickmode='linear', tick0=0, dtick=1), 
+                     yaxis={'showticklabels': False}  
                  ))
 
 
@@ -354,12 +386,7 @@ pgs = {
 
 pg = st.sidebar.radio('Navigate pages', options=pgs.keys())
 
-selected_year = st.sidebar.selectbox('Select Year', options=['Select'] + list(data['year'].unique()))
-selected_month = st.sidebar.multiselect('Select Month', options=list(data['month_name'].unique()))
-selected_quarter = st.sidebar.selectbox('Select Quarter', options=['Select'] + list(data['quarter'].unique()))
-selected_day = st.sidebar.multiselect('Select Day', options=list(data['day_name'].unique()))
-selected_season = st.sidebar.radio('Select Season', options=['Select'] + list(data['season'].unique()))
-selected_weather = st.sidebar.radio('Select Weather', options=['Select'] + list(data['weather'].unique()))
+
 
 pgs[pg]()
 
