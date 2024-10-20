@@ -231,12 +231,27 @@ def page2():
     tab1, tab2, tab3 = st.tabs(['Season', 'Temperature', 'Hour'])
        
     with tab1:
-        profit_by_season = data.groupby('weather')['rented_bikes_count'].sum().reset_index()
+        filtered_data = data.copy()
+
+        if selected_year != 'Select':
+            filtered_data = filtered_data[filtered_data['year'] == selected_year]
+        if selected_month:  
+            filtered_data = filtered_data[filtered_data['month_name'].isin(selected_month)]
+        if selected_quarter != 'Select':
+            filtered_data = filtered_data[filtered_data['quarter'] == selected_quarter]
+        if selected_day:  
+            filtered_data = filtered_data[filtered_data['day_name'].isin(selected_day)]
+        if selected_season != 'Select':
+            filtered_data = filtered_data[filtered_data['season'] == selected_season]
+        if selected_weather != 'Select':
+            filtered_data = filtered_data[filtered_data['weather'] == selected_weather]
+            
+        profit_by_season = filtered_data.groupby('weather')['rented_bikes_count'].sum().reset_index()
         st.plotly_chart(px.bar(profit_by_season, x='weather', y='rented_bikes_count',color='weather', title='Total Rented Bikes', text_auto=True,
                                 labels={'rented_bikes_count': 'Total Rented Bikes', 'weather': 'Weather'})
                          .update_layout(yaxis={'showticklabels': False}))
 
-        rentedbikes_by_year = data.groupby('year')['rented_bikes_count'].sum().reset_index()
+        rentedbikes_by_year = filtered_data.groupby('year')['rented_bikes_count'].sum().reset_index()
         st.plotly_chart(px.bar(rentedbikes_by_year, x='year', y='rented_bikes_count', text_auto=True)
                  .update_layout(
                      title_text='Rented Bikes by Year',
@@ -251,7 +266,7 @@ def page2():
                  ))
 
     with tab2:
-        temp_analysis = data.groupby('temp')['rented_bikes_count'].sum().reset_index()
+        temp_analysis = filtered_data.groupby('temp')['rented_bikes_count'].sum().reset_index()
         def get_point_colors(values):
             
             max_value = max(values)
@@ -268,27 +283,36 @@ def page2():
                      yaxis_title='Total Rentals',
                      yaxis={'showticklabels': False}
                  ))
+        
         st.plotly_chart(px.pie(data, names='weather', values='rented_bikes_count').update_traces(textinfo='value+percent')
                         .update_layout(title_text='Rented Bikes by Weather'))
         
-        weather_analysis = data.groupby('weather')['rented_bikes_count'].sum().reset_index()
+        weather_analysis = filtered_data.groupby('weather')['rented_bikes_count'].sum().reset_index()
         st.plotly_chart(px.histogram(weather_analysis, x='rented_bikes_count', y='weather',color='weather', title='Weather vs Rented Bikes',text_auto=True,
              labels={'weather': 'Weather Condition'}).update_layout(xaxis={'showticklabels': False}))
     
     with tab3:
         data['hour'] = pd.to_datetime(data['time'], format='%H:%M:%S').dt.hour
-        rented_bikes_by_hour = data.groupby('hour')['rented_bikes_count'].sum().reset_index()
+        rented_bikes_by_hour = filtered_data.groupby('hour')['rented_bikes_count'].sum().reset_index()
         st.plotly_chart(px.line(rented_bikes_by_hour, x='hour', y='rented_bikes_count')
-                 .update_traces(line_color='red',mode='lines+markers',
-                     marker=dict(color='green', size=8))
+                 .update_traces(
+                     line_color='red',
+                     mode='lines+markers+text',  # Include text on the line with markers
+                     marker=dict(color='green', size=8),
+                     text=rented_bikes_by_hour['rented_bikes_count'],  # Display numbers on the line
+                     textposition='top center'  # Position the text at the top of markers
+                 )
                  .update_layout(
                      title_text='Total Rented Bikes by Hour of Day',
                      xaxis_title='Hour',
                      yaxis_title='Total Rentals',
-                     yaxis={'showticklabels': False}
+                     xaxis=dict(tickmode='linear', tick0=0, dtick=1),  # Show all hours on x-axis
+                     yaxis={'showticklabels': False}  # Hide y-axis tick labels if needed
                  ))
 
-        rented_bikes_by_time = data.groupby('time')['rented_bikes_count'].sum().reset_index()
+
+
+        rented_bikes_by_time = filtered_data.groupby('time')['rented_bikes_count'].sum().reset_index()
         max_rented_bikes = rented_bikes_by_time['rented_bikes_count'].max()
         min_rented_bikes = rented_bikes_by_time['rented_bikes_count'].min()
         time_colors = ['green' if value == max_rented_bikes else 'red' if value == min_rented_bikes else 'lightgray' for value in rented_bikes_by_time['rented_bikes_count']]
@@ -297,13 +321,27 @@ def page2():
               labels={'rented_bikes_count': 'Total Rentals', 'time': 'Time'}).update_layout(yaxis={'showticklabels': False}).update_traces(marker_color=time_colors))
 
 def page3():
-    user_analysis = data.groupby('month_name')[['casual', 'registered']].sum().reset_index()
-    st.plotly_chart(px.bar(user_analysis, x='month_name', y=['casual', 'registered'], text_auto=True, barmode='group',
+        filtered_data = data.copy()
+        if selected_year != 'Select':
+            filtered_data = filtered_data[filtered_data['year'] == selected_year]
+        if selected_month:  
+            filtered_data = filtered_data[filtered_data['month_name'].isin(selected_month)]
+        if selected_quarter != 'Select':
+            filtered_data = filtered_data[filtered_data['quarter'] == selected_quarter]
+        if selected_day:  
+            filtered_data = filtered_data[filtered_data['day_name'].isin(selected_day)]
+        if selected_season != 'Select':
+            filtered_data = filtered_data[filtered_data['season'] == selected_season]
+        if selected_weather != 'Select':
+            filtered_data = filtered_data[filtered_data['weather'] == selected_weather]
+            
+        user_analysis = filtered_data.groupby('month_name')[['casual', 'registered']].sum().reset_index()
+        st.plotly_chart(px.bar(user_analysis, x='month_name', y=['casual', 'registered'], text_auto=True, barmode='group',
                             title='Casual vs Registered Users by Month', 
                             labels={'value': 'Number of Users', 'month_name': 'Month'})
                      .update_layout(yaxis={'showticklabels': False}))
 
-    st.plotly_chart(px.pie(data, names='day_period', values='Profit').update_traces(textinfo='value+percent')
+        st.plotly_chart(px.pie(filtered_data, names='day_period', values='Profit').update_traces(textinfo='value+percent')
                    .update_layout(title_text='Profit Distribution by Day Period'))
 
 
